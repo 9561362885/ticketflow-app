@@ -83,7 +83,7 @@ app.get('/api/concerts/:id', (req, res) => {
 });
 
 app.post('/api/concerts', (req, res) => {
-  const { title, venue, date, time, price, totalSeats, genre } = req.body;
+  const { title, venue, date, time, price, totalSeats, genre, image } = req.body;
   if (!title || !venue || !date || !price || !totalSeats)
     return res.status(400).json({ error: 'Missing required fields' });
   const concert = {
@@ -96,10 +96,34 @@ app.post('/api/concerts', (req, res) => {
     totalSeats: Number(totalSeats),
     bookedSeats: 0,
     genre: genre || 'Music',
-    image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600&q=80',
+    image: image || 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600&q=80',
   };
   concerts.push(concert);
   res.status(201).json(concert);
+});
+
+app.put('/api/concerts/:id', (req, res) => {
+  const concert = concerts.find((c) => c.id === req.params.id);
+  if (!concert) return res.status(404).json({ error: 'Concert not found' });
+  const { title, venue, date, time, price, totalSeats, genre, image } = req.body;
+  Object.assign(concert, {
+    title: title ?? concert.title,
+    venue: venue ?? concert.venue,
+    date: date ?? concert.date,
+    time: time ?? concert.time,
+    price: price ? Number(price) : concert.price,
+    totalSeats: totalSeats ? Number(totalSeats) : concert.totalSeats,
+    genre: genre ?? concert.genre,
+    image: image || concert.image,
+  });
+  res.json(concert);
+});
+
+app.delete('/api/concerts/:id', (req, res) => {
+  const idx = concerts.findIndex((c) => c.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Concert not found' });
+  concerts.splice(idx, 1);
+  res.json({ success: true });
 });
 
 // ─── Book a ticket — creates Contact + Ticket in HubSpot ─────────────────────
