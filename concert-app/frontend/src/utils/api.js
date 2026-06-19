@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/api` });
 
 export const getConcerts  = ()          => api.get('/concerts').then(r => r.data);
 export const getConcert   = (id)        => api.get(`/concerts/${id}`).then(r => r.data);
