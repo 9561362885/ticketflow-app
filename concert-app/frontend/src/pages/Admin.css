@@ -1,0 +1,28 @@
+.admin-page { padding: 36px 0 60px; }
+.admin-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 28px;
+}
+.admin-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+.admin-sub { color: var(--muted); font-size: 14px; }
+.admin-form-card { margin-bottom: 28px; }
+.form-section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.field-error { display: block; font-size: 12px; color: var(--danger); margin-top: 4px; }
+
+.admin-concerts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.admin-concert-card { padding: 18px; }
+.admin-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.admin-concert-title { font-size: 16px; font-weight: 700; margin-top: 6px; }
+.admin-price { font-size: 20px; font-weight: 700; color: var(--accent-light); }
+.admin-meta { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.admin-seats-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+  background: var(--bg3); padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+.seat-bar { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
