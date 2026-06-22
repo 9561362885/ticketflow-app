@@ -84,3 +84,7 @@
   background: var(--bg3); padding: 8px 12px;
   border-radius: var(--radius-sm);
 }
+
+@media (max-width: 767px) {
+  .concert-summary { position: unset; }
+}
