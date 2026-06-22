@@ -3,9 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 app.use(express.json());
@@ -126,6 +128,57 @@ app.delete('/api/concerts/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// ─── Email helper — sends a styled confirmation email via Resend ────────────
+async function sendConfirmationEmail({ to, firstName, concertTitle, venue, date, time, seats, totalAmount, bookingRef }) {
+  if (!resend) {
+    console.log('⚠️  RESEND_API_KEY not set — skipping email send');
+    return;
+  }
+
+  const formattedDate = new Date(date).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  const html = `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #09090b; color: #fafafa; border-radius: 12px; overflow: hidden;">
+    <div style="background: linear-gradient(135deg, #a855f7, #ec4899); padding: 28px 24px; text-align: center;">
+      <h1 style="margin: 0; font-size: 22px; color: #fff;">🎉 Booking Confirmed!</h1>
+    </div>
+    <div style="padding: 28px 24px;">
+      <p style="font-size: 15px; color: #d4d4d8;">Hi ${firstName},</p>
+      <p style="font-size: 15px; color: #d4d4d8; line-height: 1.6;">
+        Your booking for <strong style="color:#fff;">${concertTitle}</strong> is confirmed. Here are your details:
+      </p>
+      <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr><td style="padding: 8px 0; color: #a1a1aa; font-size: 13px;">Booking ref</td><td style="padding: 8px 0; text-align: right; font-weight: 600;">${bookingRef}</td></tr>
+        <tr style="border-top: 1px solid #27272a;"><td style="padding: 8px 0; color: #a1a1aa; font-size: 13px;">Venue</td><td style="padding: 8px 0; text-align: right;">${venue}</td></tr>
+        <tr style="border-top: 1px solid #27272a;"><td style="padding: 8px 0; color: #a1a1aa; font-size: 13px;">Date</td><td style="padding: 8px 0; text-align: right;">${formattedDate}</td></tr>
+        <tr style="border-top: 1px solid #27272a;"><td style="padding: 8px 0; color: #a1a1aa; font-size: 13px;">Time</td><td style="padding: 8px 0; text-align: right;">${time}</td></tr>
+        <tr style="border-top: 1px solid #27272a;"><td style="padding: 8px 0; color: #a1a1aa; font-size: 13px;">Seats</td><td style="padding: 8px 0; text-align: right;">${seats}</td></tr>
+        <tr style="border-top: 1px solid #3f3f46;"><td style="padding: 12px 0; font-weight: 700;">Total</td><td style="padding: 12px 0; text-align: right; font-weight: 700; font-size: 18px; color: #c084fc;">₹${totalAmount.toLocaleString()}</td></tr>
+      </table>
+      <p style="font-size: 13px; color: #71717a; line-height: 1.6;">
+        See you at the show! Keep this email as your confirmation.
+      </p>
+    </div>
+    <div style="background: #18181b; padding: 16px 24px; text-align: center; font-size: 12px; color: #71717a;">
+      TicketFlow · Concert Booking
+    </div>
+  </div>`;
+
+  try {
+    await resend.emails.send({
+      from: 'TicketFlow <onboarding@resend.dev>',
+      to,
+      subject: `Booking confirmed — ${concertTitle}`,
+      html,
+    });
+    console.log(`✅ Confirmation email sent to ${to}`);
+  } catch (err) {
+    console.error('Resend email error:', err?.message || err);
+  }
+}
+
 // ─── Book a ticket — creates Contact + Ticket in HubSpot ─────────────────────
 app.post('/api/bookings', async (req, res) => {
   const { firstName, lastName, email, phone, concertId, seats } = req.body;
@@ -175,6 +228,19 @@ app.post('/api/bookings', async (req, res) => {
 
     const bookingRef = `TKT-${ticketId}`;
 
+    // 5. Send confirmation email (fire-and-forget, doesn't block the response)
+    sendConfirmationEmail({
+      to: email,
+      firstName,
+      concertTitle: concert.title,
+      venue: concert.venue,
+      date: concert.date,
+      time: concert.time,
+      seats: Number(seats),
+      totalAmount,
+      bookingRef,
+    });
+
     res.status(201).json({
       success: true,
       bookingRef,
@@ -192,6 +258,19 @@ app.post('/api/bookings', async (req, res) => {
     if (!process.env.HUBSPOT_API_KEY || process.env.HUBSPOT_API_KEY === 'your_hubspot_private_app_token_here') {
       concert.bookedSeats += Number(seats);
       const mockRef = `TKT-MOCK-${Date.now()}`;
+
+      sendConfirmationEmail({
+        to: email,
+        firstName,
+        concertTitle: concert.title,
+        venue: concert.venue,
+        date: concert.date,
+        time: concert.time,
+        seats: Number(seats),
+        totalAmount: Number(seats) * concert.price,
+        bookingRef: mockRef,
+      });
+
       return res.status(201).json({
         success: true,
         bookingRef: mockRef,
