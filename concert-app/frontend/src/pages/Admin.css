@@ -55,3 +55,8 @@
   grid-column: 1 / -1; text-align: center;
   padding: 48px; color: var(--muted);
 }
+
+@media (max-width: 500px) {
+  .admin-header { flex-direction: column; gap: 12px; }
+}
+

@@ -12,6 +12,8 @@
   gap: 14px; margin-bottom: 28px;
 }
 @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+
 
 .stat-card { text-align: center; padding: 20px; }
 .stat-value { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; margin-bottom: 4px; }
@@ -30,7 +32,7 @@
 
 .dash-empty { text-align: center; padding: 48px; color: var(--muted); }
 
-.table-wrap { padding: 0; overflow: hidden; }
+.table-wrap { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .bookings-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .bookings-table th {
   text-align: left; padding: 12px 16px;
@@ -58,3 +60,7 @@
 .stage-select:focus { outline: none; border-color: var(--accent); }
 
 .badge-blue { background: #1d4ed822; color: #60a5fa; border: 1px solid #1d4ed844; }
+
+@media (max-width: 500px) {
+  .dash-header { flex-direction: column; gap: 12px; }
+}

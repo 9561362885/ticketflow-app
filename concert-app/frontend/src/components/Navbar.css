@@ -23,3 +23,39 @@
 }
 .nav-link:hover { color: var(--text); background: var(--bg3); }
 .nav-link.active { color: var(--text); background: var(--bg3); }
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 58px;
+    left: 0;
+    width: 100%;
+    background: var(--bg2);
+    flex-direction: column;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  }
+  .nav-links.mobile-open {
+    display: flex;
+  }
+  .nav-link {
+    padding: 12px;
+    text-align: center;
+    border-radius: var(--radius-sm);
+  }
+}
